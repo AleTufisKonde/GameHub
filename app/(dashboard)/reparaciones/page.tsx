@@ -20,7 +20,7 @@ export default function ReparacionesPage() {
     const { data, error } = await supabase
       .from('reparacion')
       .select('*')
-      .eq('estado', 'en_curso')
+      .eq('estado', 'en_reparacion')
       .order('fecha_ingreso', { ascending: false });
     if (error) console.error('Error cargando reparaciones:', error);
     if (data) setReparaciones(data as Reparacion[]);
@@ -36,7 +36,7 @@ export default function ReparacionesPage() {
     try {
       const { error: e } = await supabase
         .from('reparacion')
-        .update({ estado: 'finalizada', fecha_fin: new Date().toISOString().slice(0, 10) })
+        .update({ estado: 'reparado', fecha_fin: new Date().toISOString().slice(0, 10) })
         .eq('id_reparacion', repAFinalizar.id_reparacion);
       if (e) throw new Error(e.message);
       if (repAFinalizar.id_equipo && repAFinalizar.tipo_equipo === 'consola') {

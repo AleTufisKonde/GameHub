@@ -3,11 +3,13 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Reparacion, Consola } from '@/lib/types';
+import { obtenerSesion } from '@/lib/auth';
 
 interface Props { reparacionInicial?: Reparacion; onClose: () => void; onSuccess: () => void; }
 
 export default function NuevaReparacionModal({ reparacionInicial, onClose, onSuccess }: Props) {
   const esEdicion = !!reparacionInicial;
+  const sesion = obtenerSesion();
   const [form, setForm] = useState({
     tipo_equipo: reparacionInicial?.tipo_equipo || 'consola',
     id_equipo: reparacionInicial?.id_equipo?.toString() || '',
@@ -59,7 +61,8 @@ export default function NuevaReparacionModal({ reparacionInicial, onClose, onSuc
         descripcion_falla: form.descripcion_falla,
         fecha_ingreso: form.fecha_ingreso,
         fecha_estimada_salida: form.fecha_estimada_salida || null,
-        estado: 'en_curso',
+        estado: 'en_reparacion',
+        id_empleado_registro: sesion?.id_usuario || null,
       };
       if (esEdicion && reparacionInicial) {
         const { error } = await supabase.from('reparacion').update(datos).eq('id_reparacion', reparacionInicial.id_reparacion);
@@ -78,8 +81,10 @@ export default function NuevaReparacionModal({ reparacionInicial, onClose, onSuc
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-container" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-white">{esEdicion ? '✏️ Editar Reparación' : '🔧 Nueva Reparación'}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl">×</button>
+          <h2 className="text-xl font-bold" style={{ color: 'var(--text-1)' }}>
+            {esEdicion ? '✏️ Editar Reparación' : '🔧 Nueva Reparación'}
+          </h2>
+          <button onClick={onClose} style={{ color: 'var(--text-3)', background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer' }}>×</button>
         </div>
         <div className="space-y-4">
           <div>
@@ -93,15 +98,15 @@ export default function NuevaReparacionModal({ reparacionInicial, onClose, onSuc
           <div>
             <label className="form-label">
               ID de la consola
-              <span className="ml-2 text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                (escribe el ID y los datos se llenan automáticamente)
+              <span className="ml-2" style={{ color: 'var(--text-3)', fontSize: '10px', textTransform: 'none', letterSpacing: 0 }}>
+                (los datos se llenan automáticamente)
               </span>
             </label>
             <input type="number" className="form-input" placeholder="Ej: 1, 2, 3..."
               value={form.id_equipo}
               onChange={(e) => handleChange('id_equipo', e.target.value)}
               onBlur={(e) => form.tipo_equipo === 'consola' && buscarConsola(e.target.value)} />
-            {buscando && <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>Buscando consola...</p>}
+            {buscando && <p className="text-xs mt-1" style={{ color: 'var(--text-3)' }}>Buscando consola...</p>}
           </div>
           <div>
             <label className="form-label">Nombre del equipo</label>
@@ -127,7 +132,7 @@ export default function NuevaReparacionModal({ reparacionInicial, onClose, onSuc
           </div>
           <div>
             <label className="form-label">Descripción de la falla *</label>
-            <textarea className="form-input" rows={3} placeholder="Describe el problema..."
+            <textarea className="form-input" rows={3} placeholder="Describe el problema detalladamente..."
               value={form.descripcion_falla} onChange={(e) => handleChange('descripcion_falla', e.target.value)} />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -142,7 +147,12 @@ export default function NuevaReparacionModal({ reparacionInicial, onClose, onSuc
                 value={form.fecha_estimada_salida} onChange={(e) => handleChange('fecha_estimada_salida', e.target.value)} />
             </div>
           </div>
-          {error && <p className="text-sm" style={{ color: 'var(--color-danger)' }}>{error}</p>}
+          {error && (
+            <div className="px-4 py-3 rounded-xl text-sm font-bold"
+              style={{ background: 'rgba(248,113,113,0.1)', color: 'var(--red)', border: '1px solid rgba(248,113,113,0.2)' }}>
+              ⚠️ {error}
+            </div>
+          )}
           <div className="flex gap-3 pt-2">
             <button onClick={onClose} className="btn-outline flex-1">Cancelar</button>
             <button onClick={handleGuardar} className="btn-primary flex-1" disabled={cargando}>
