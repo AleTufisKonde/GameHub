@@ -12,6 +12,7 @@ export default function ConsolasPage() {
   const [consolaAEditar, setConsolaAEditar] = useState<Consola | null>(null);
   const [consolaAEliminar, setConsolaAEliminar] = useState<Consola | null>(null);
   const [eliminando, setEliminando] = useState(false);
+  const [filtroEstado, setFiltroEstado] = useState('todos');
 
   const cargarConsolas = useCallback(async () => {
     setCargando(true);
@@ -33,6 +34,10 @@ export default function ConsolasPage() {
     setEliminando(false);
   };
 
+  const consolasFiltradas = filtroEstado === 'todos'
+    ? consolas
+    : consolas.filter(c => c.estado === filtroEstado);
+
   const badgeEstado = (estado: string) => {
     if (estado === 'disponible') return <span className="badge-success">Disponible</span>;
     if (estado === 'rentada') return <span className="badge-warning">Rentada</span>;
@@ -40,23 +45,54 @@ export default function ConsolasPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+
+      {/* Título */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">📦 Consolas</h1>
-        <p className="mt-1 text-sm" style={{ color: 'var(--color-text-muted)' }}>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--cyan)' }}>🎮 Consolas</h1>
+        <p className="mt-1 text-sm" style={{ color: 'var(--text-3)' }}>
           Administra el catálogo completo de consolas.
         </p>
       </div>
-      <div className="mb-6">
-        <button className="btn-primary" onClick={() => setMostrarNueva(true)}>+ Nueva Consola</button>
+
+      {/* Botón izquierda + Filtros derecha */}
+      <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
+        <button className="btn-primary" onClick={() => setMostrarNueva(true)}>
+          + Nueva Consola
+        </button>
+        <div className="flex gap-2 flex-wrap">
+          {[
+            { valor: 'todos',      label: 'Todos' },
+            { valor: 'disponible', label: 'Disponible' },
+            { valor: 'rentada',    label: 'Rentada' },
+            { valor: 'reparacion', label: 'Reparación' },
+          ].map((f) => (
+            <button key={f.valor}
+              onClick={() => setFiltroEstado(f.valor)}
+              className={filtroEstado === f.valor ? 'btn-primary' : 'btn-outline'}
+              style={{ padding: '7px 16px', fontSize: '12px' }}>
+              {f.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="card p-0 overflow-hidden">
-        <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(148,163,184,0.1)' }}>
-          <h2 className="text-base font-semibold text-white">Catálogo de Consolas ({consolas.length})</h2>
+      {/* Tabla */}
+      <div className="card-table">
+        <div className="card-table-header">
+          <span className="card-table-title">
+            Catálogo de Consolas ({consolasFiltradas.length})
+          </span>
         </div>
         {cargando ? (
-          <div className="p-12 text-center" style={{ color: 'var(--color-text-muted)' }}>Cargando...</div>
+          <div className="empty-state">
+            <p className="empty-state-text">Cargando consolas...</p>
+          </div>
+        ) : consolasFiltradas.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-state-icon">🎮</div>
+            <p className="empty-state-text">No hay consolas registradas.</p>
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -66,8 +102,8 @@ export default function ConsolasPage() {
                   <th className="table-header">Marca / Modelo</th>
                   <th className="table-header">ID</th>
                   <th className="table-header">No. Serie</th>
-                  <th className="table-header">Controles Inc.</th>
-                  <th className="table-header">Controles Máx.</th>
+                  <th className="table-header">Ctrl. Inc.</th>
+                  <th className="table-header">Ctrl. Máx.</th>
                   <th className="table-header">Estado</th>
                   <th className="table-header">Almacenamiento</th>
                   <th className="table-header">Adquisición</th>
@@ -75,45 +111,39 @@ export default function ConsolasPage() {
                 </tr>
               </thead>
               <tbody>
-                {consolas.length === 0 ? (
-                  <tr>
-                    <td colSpan={10} className="table-cell text-center" style={{ color: 'var(--color-text-muted)' }}>
-                      No hay consolas registradas.
+                {consolasFiltradas.map((c) => (
+                  <tr key={c.id_consola}>
+                    <td className="table-cell font-bold" style={{ color: 'var(--text-1)' }}>{c.nombre}</td>
+                    <td className="table-cell">{c.marca} {c.modelo}</td>
+                    <td className="table-cell font-mono text-xs">{c.id_consola}</td>
+                    <td className="table-cell font-mono text-xs">{c.numero_serie}</td>
+                    <td className="table-cell text-center">{c.controles_incluidos}</td>
+                    <td className="table-cell text-center">{c.controles_maximos}</td>
+                    <td className="table-cell">{badgeEstado(c.estado)}</td>
+                    <td className="table-cell">{c.almacenamiento || '—'}</td>
+                    <td className="table-cell">
+                      {c.fecha_adquisicion
+                        ? new Date(c.fecha_adquisicion).toLocaleDateString('es-MX')
+                        : '—'}
+                    </td>
+                    <td className="table-cell">
+                      <div className="flex gap-2">
+                        <button className="btn-edit"
+                          onClick={() => setConsolaAEditar(c)}>✏️ Editar</button>
+                        <button className="btn-danger"
+                          onClick={() => setConsolaAEliminar(c)}
+                          disabled={c.estado !== 'disponible'}>🗑️</button>
+                      </div>
                     </td>
                   </tr>
-                ) : (
-                  consolas.map((c) => (
-                    <tr key={c.id_consola}>
-                      <td className="table-cell font-medium text-white">{c.nombre}</td>
-                      <td className="table-cell">{c.marca} {c.modelo}</td>
-                      <td className="table-cell font-mono text-xs">{c.id_consola}</td>
-                      <td className="table-cell font-mono text-xs">{c.numero_serie}</td>
-                      <td className="table-cell text-center">{c.controles_incluidos}</td>
-                      <td className="table-cell text-center">{c.controles_maximos}</td>
-                      <td className="table-cell">{badgeEstado(c.estado)}</td>
-                      <td className="table-cell">{c.almacenamiento || '—'}</td>
-                      <td className="table-cell">
-                        {c.fecha_adquisicion ? new Date(c.fecha_adquisicion).toLocaleDateString('es-MX') : '—'}
-                      </td>
-                      <td className="table-cell">
-                        <div className="flex gap-2">
-                          <button className="text-xs px-3 py-1.5 rounded-lg font-medium"
-                            style={{ backgroundColor: 'rgba(108,99,255,0.15)', color: 'var(--color-accent)' }}
-                            onClick={() => setConsolaAEditar(c)}>Editar</button>
-                          <button className="btn-danger text-xs px-3 py-1.5"
-                            onClick={() => setConsolaAEliminar(c)}
-                            disabled={c.estado !== 'disponible'}>Eliminar</button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
+                ))}
               </tbody>
             </table>
           </div>
         )}
       </div>
 
+      {/* Modal nueva/editar */}
       {(mostrarNueva || consolaAEditar) && (
         <NuevaConsolaModal
           consolaInicial={consolaAEditar || undefined}
@@ -122,19 +152,31 @@ export default function ConsolasPage() {
         />
       )}
 
+      {/* Modal eliminar */}
       {consolaAEliminar && (
         <div className="modal-overlay" onClick={() => setConsolaAEliminar(null)}>
-          <div className="modal-container max-w-md" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-xl font-bold text-white mb-4">⚠️ Eliminar Consola</h2>
+          <div className="modal-container" style={{ maxWidth: '420px' }}
+            onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--text-1)' }}>
+              ⚠️ Eliminar Consola
+            </h2>
             <div className="card mb-4 space-y-2 text-sm">
-              <p><span style={{ color: 'var(--color-text-muted)' }}>Consola:</span>{' '}
-                <strong className="text-white">{consolaAEliminar.nombre} — {consolaAEliminar.marca} {consolaAEliminar.modelo}</strong></p>
-              <p><span style={{ color: 'var(--color-text-muted)' }}>No. Serie:</span>{' '}
-                <span className="text-white">{consolaAEliminar.numero_serie}</span></p>
+              <div className="flex justify-between">
+                <span style={{ color: 'var(--text-3)' }}>Consola:</span>
+                <strong style={{ color: 'var(--text-1)' }}>
+                  {consolaAEliminar.nombre} — {consolaAEliminar.marca} {consolaAEliminar.modelo}
+                </strong>
+              </div>
+              <div className="flex justify-between">
+                <span style={{ color: 'var(--text-3)' }}>No. Serie:</span>
+                <span style={{ color: 'var(--text-1)' }}>{consolaAEliminar.numero_serie}</span>
+              </div>
             </div>
             <div className="flex gap-3">
-              <button className="btn-outline flex-1" onClick={() => setConsolaAEliminar(null)}>Cancelar</button>
-              <button className="btn-danger flex-1" onClick={handleEliminar} disabled={eliminando}>
+              <button className="btn-outline flex-1"
+                onClick={() => setConsolaAEliminar(null)}>Cancelar</button>
+              <button className="btn-danger flex-1"
+                onClick={handleEliminar} disabled={eliminando}>
                 {eliminando ? 'Eliminando...' : '🗑️ Eliminar'}
               </button>
             </div>

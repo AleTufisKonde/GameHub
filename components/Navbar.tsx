@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { href: '/dashboard',    label: 'Dashboard',         icon: '▣' },
   { href: '/rentas',       label: 'Renta de Consolas', icon: '⏱' },
   { href: '/consolas',     label: 'Consolas',          icon: '🎮' },
+  { href: '/controles',     label: 'Controles',         icon: '🎮' },  
   { href: '/inventario',   label: 'Inventario',        icon: '📋' },
   { href: '/reparaciones', label: 'Reparación',        icon: '🔧' },
   { href: '/empleados',    label: 'Empleados',         icon: '👥', soloGerente: true },
