@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { Usuario } from '@/lib/types';
 import NuevoEmpleadoModal from '@/components/modals/NuevoEmpleadoModal';
 import { obtenerSesion } from '@/lib/auth';
+import PageHeader from '@/components/PageHeader';
 
 export default function EmpleadosPage() {
   const sesion = obtenerSesion();
@@ -40,12 +41,9 @@ export default function EmpleadosPage() {
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold" style={{ color: 'var(--cyan)' }}>👥 Empleados</h1>
-        <p className="mt-1 text-sm" style={{ color: 'var(--text-3)' }}>
-          Administra los usuarios del sistema. Los empleados inactivos no pueden acceder.
-        </p>
-      </div>
+      
+      <PageHeader titulo="👥 Empleados" descripcion="Gestiona los usuarios del sistema." />
+
 
       <div className="mb-6">
         <button className="btn-primary" onClick={() => setMostrarNuevo(true)}>+ Nuevo Empleado</button>

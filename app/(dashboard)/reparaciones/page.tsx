@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Reparacion } from '@/lib/types';
 import NuevaReparacionModal from '@/components/modals/NuevaReparacionModal';
+import PageHeader from '@/components/PageHeader';
 
 export default function ReparacionesPage() {
   const [reparaciones, setReparaciones] = useState<Reparacion[]>([]);
@@ -64,12 +65,7 @@ export default function ReparacionesPage() {
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold" style={{ color: 'var(--cyan)' }}>🔧 Reparaciones</h1>
-        <p className="mt-1 text-sm" style={{ color: 'var(--text-3)' }}>
-          Registra equipos en reparación y márcalos como finalizados cuando estén listos.
-        </p>
-      </div>
+      <PageHeader titulo="🔧 Reparaciones" descripcion="Registra equipos en reparación y márcalos como finalizados." />
 
       <div className="mb-6">
         <button className="btn-primary" onClick={() => setMostrarNueva(true)}>

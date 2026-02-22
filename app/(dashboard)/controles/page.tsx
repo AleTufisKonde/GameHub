@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import NuevoControlModal from '@/components/modals/NuevoControlModal';
+import PageHeader from '@/components/PageHeader';
 
 interface Control {
   id_control: number;
@@ -61,12 +62,8 @@ export default function ControlesPage() {
     <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
 
       {/* Título */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold" style={{ color: 'var(--cyan)' }}>🕹️ Controles</h1>
-        <p className="mt-1 text-sm" style={{ color: 'var(--text-3)' }}>
-          Administra los controles vinculados a cada consola. Cada consola tiene un límite máximo de controles.
-        </p>
-      </div>
+      <PageHeader titulo="🕹️ Controles" descripcion="Administra los controles vinculados a cada consola." />
+
 
       {/* Botón izquierda + Filtros derecha */}
       <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">

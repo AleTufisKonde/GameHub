@@ -6,6 +6,7 @@ import { obtenerSesion } from '@/lib/auth';
 import { RentaConDetalle } from '@/lib/types';
 import NuevaRentaModal from '@/components/modals/NuevaRentaModal';
 import FinalizarRentaModal from '@/components/modals/FinalizarRentaModal';
+import PageHeader from '@/components/PageHeader';
 
 function formatearTiempo(ms: number): string {
   const totalSegundos = Math.floor(ms / 1000);
@@ -57,12 +58,8 @@ export default function RentasPage() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">🎮 Renta de Consolas</h1>
-        <p className="mt-1 text-sm" style={{ color: 'var(--color-text-muted)' }}>
-          Registra nuevas rentas, monitorea las activas en tiempo real y finaliza el cobro.
-        </p>
-      </div>
+      <PageHeader titulo="⏱ Rentas" descripcion="Gestiona las rentas activas en tiempo real." />
+
 
       <div className="mb-6">
         <button className="btn-primary" onClick={() => setMostrarNueva(true)}>+ Nueva Renta</button>

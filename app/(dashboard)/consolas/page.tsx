@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Consola } from '@/lib/types';
 import NuevaConsolaModal from '@/components/modals/NuevaConsolaModal';
+import PageHeader from '@/components/PageHeader';
 
 export default function ConsolasPage() {
   const [consolas, setConsolas] = useState<Consola[]>([]);
@@ -48,12 +49,8 @@ export default function ConsolasPage() {
     <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
 
       {/* Título */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold" style={{ color: 'var(--cyan)' }}>🎮 Consolas</h1>
-        <p className="mt-1 text-sm" style={{ color: 'var(--text-3)' }}>
-          Administra el catálogo completo de consolas.
-        </p>
-      </div>
+      <PageHeader titulo="🎮 Consolas" descripcion="Administra el catálogo completo de consolas." />
+
 
       {/* Botón izquierda + Filtros derecha */}
       <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">

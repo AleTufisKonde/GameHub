@@ -1,133 +1,222 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { logout } from '@/lib/auth';
+import { useEffect, useState } from 'react';
+import { obtenerSesion, logout } from '@/lib/auth';
 import { Usuario } from '@/lib/types';
 
-const NAV_LINKS = [
-  { href: '/dashboard',    label: 'Dashboard',         icon: '▣' },
-  { href: '/rentas',       label: 'Renta de Consolas', icon: '⏱' },
-  { href: '/consolas',     label: 'Consolas',          icon: '🎮' },
-  { href: '/controles',     label: 'Controles',         icon: '🎮' },  
-  { href: '/inventario',   label: 'Inventario',        icon: '📋' },
-  { href: '/reparaciones', label: 'Reparación',        icon: '🔧' },
-  { href: '/empleados',    label: 'Empleados',         icon: '👥', soloGerente: true },
-  { href: '/ganancias',    label: 'Ganancias',         icon: '💰', soloGerente: true },
-  { href: '/precios',      label: 'Precios',           icon: '⚙️', soloGerente: true },
+const navItems = [
+  { href: '/dashboard',    label: 'Dashboard',   icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="22" height="22"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> },
+  { href: '/rentas',       label: 'Rentas',      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="22" height="22"><circle cx="12" cy="12" r="9"/><polyline points="12 6 12 12 16 14"/></svg> },
+  { href: '/consolas',     label: 'Consolas',    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="22" height="22"><rect x="2" y="6" width="20" height="12" rx="3"/><line x1="8" y1="12" x2="12" y2="12"/><line x1="10" y1="10" x2="10" y2="14"/><circle cx="16" cy="11" r="1" fill="currentColor"/><circle cx="18" cy="13" r="1" fill="currentColor"/></svg> },
+  { href: '/controles',    label: 'Controles',   icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="22" height="22"><circle cx="12" cy="12" r="9"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="12" y1="9" x2="12" y2="15"/></svg> },
+  { href: '/inventario',   label: 'Inventario',  icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="22" height="22"><rect x="2" y="3" width="20" height="4" rx="1"/><rect x="2" y="10" width="20" height="4" rx="1"/><rect x="2" y="17" width="20" height="4" rx="1"/></svg> },
+  { href: '/reparaciones', label: 'Reparación',  icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="22" height="22"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg> },
 ];
 
-export default function Navbar({ usuario }: { usuario: Usuario }) {
+const navItemsGerente = [
+  { href: '/empleados', label: 'Empleados', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="22" height="22"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
+  { href: '/ganancias', label: 'Ganancias', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="22" height="22"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> },
+  { href: '/precios',   label: 'Precios',   icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="22" height="22"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg> },
+];
+
+export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const links = NAV_LINKS.filter(l => !l.soloGerente || usuario.rol === 'gerente');
+  const [usuario, setUsuario] = useState<Usuario | null>(null);
+
+  useEffect(() => { setUsuario(obtenerSesion()); }, []);
+
+  const handleCerrarSesion = () => { logout(); router.push('/'); };
+  const esGerente = usuario?.rol === 'gerente';
+  const items = esGerente ? [...navItems, ...navItemsGerente] : navItems;
 
   return (
-    <nav
-      className="fixed left-0 top-0 h-full flex flex-col z-40"
-      style={{
-        width: 'var(--navbar-width)',
-        background: 'var(--grad-sidebar)',
-        borderRight: '1px solid rgba(34,211,238,0.1)',
-      }}
-    >
-      {/* ══ LOGO centrado grande ══ */}
-      <div
-        className="flex flex-col items-center justify-center py-8 px-4"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
-      >
-        {/* Logo imagen grande */}
-        <div
-          className="rounded-2xl overflow-hidden mb-3"
-          style={{
-            width: '90px', height: '90px',
-            boxShadow: '0 8px 30px rgba(34,211,238,0.3), 0 0 0 1px rgba(34,211,238,0.15)',
-          }}
-        >
-          <img src="/logo.png" className="w-full h-full object-cover" alt="GameHub" />
-        </div>
-        <span
-          className="text-lg font-black tracking-wide"
-          style={{ color: 'var(--text-1)', fontFamily: "'Space Grotesk', sans-serif" }}
-        >
+    <aside style={{
+      width: 'var(--navbar-width)',
+      position: 'fixed', top: 0, left: 0, bottom: 0,
+      display: 'flex', flexDirection: 'column',
+      background: 'rgba(0,0,0,0.35)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      borderRight: '1px solid rgba(255,255,255,0.08)',
+      zIndex: 40,
+      overflowY: 'auto',
+    }}>
+
+      {/* ── Logo ── */}
+      <div style={{ padding: '32px 24px 28px', textAlign: 'center', position: 'relative' }}>
+        {/* Glow detrás del logo */}
+        <div style={{
+          position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)',
+          width: '120px', height: '120px',
+          background: 'radial-gradient(circle, rgba(34,211,238,0.25) 0%, transparent 70%)',
+          filter: 'blur(15px)', pointerEvents: 'none',
+        }} />
+
+        {/* Contenedor logo */}
+        <div style={{
+  width: '110px', height: '110px',
+  margin: '0 auto 16px',
+  borderRadius: '50%',
+  border: '2.5px solid rgba(34,211,238,0.45)',
+  boxShadow: '0 0 25px rgba(34,211,238,0.3), 0 0 50px rgba(88,28,135,0.2)',
+  overflow: 'hidden',
+  position: 'relative',
+  background: 'transparent',
+}}>
+  <img
+    src="/logo.png"
+    alt="GameHub"
+    style={{
+      width: '144%',
+      height: '150%',
+      objectFit: 'cover',
+      position: 'absolute',
+      top: '54%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+    }}
+  />
+</div>
+
+        <p style={{
+          fontSize: '1.8rem', fontWeight: 'bold',
+          color: '#fff', lineHeight: 1.1, letterSpacing: '-0.5px',
+        }}>
           GameHub
-        </span>
-        <span className="text-xs mt-0.5 font-600" style={{ color: 'var(--cyan)' }}>
-          Sistema de Renta
-        </span>
+        </p>
+        <p style={{
+          fontSize: '0.62rem', color: 'rgba(34,211,238,0.7)',
+          letterSpacing: '3px', marginTop: '5px', textTransform: 'uppercase',
+        }}>
+          RENT · PLAY · DISCOVER
+        </p>
+
+        {/* Línea divisoria */}
+        <div style={{
+          height: '1px',
+          background: 'linear-gradient(90deg, transparent, rgba(34,211,238,0.5), rgba(88,28,135,0.5), transparent)',
+          marginTop: '24px',
+        }} />
       </div>
 
-      {/* ══ LINKS de navegación ══ */}
-      <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-        {links.map((link) => {
-          const esActivo = pathname === link.href;
+      {/* ── Nav items ── */}
+      <nav aria-label="Menú principal" style={{ flex: 1, padding: '8px 0' }}>
+        {items.map((item) => {
+          const activo = pathname === item.href ||
+            (item.href !== '/dashboard' && pathname.startsWith(item.href));
           return (
-            <a
-              key={link.href}
-              href={link.href}
-              className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all duration-200"
-              style={{
-                fontWeight: 700,
-                background: esActivo
-                  ? 'linear-gradient(135deg, rgba(34,211,238,0.15), rgba(99,102,241,0.1))'
-                  : 'transparent',
-                color: esActivo ? 'var(--cyan)' : 'var(--text-3)',
-                borderLeft: esActivo ? '3px solid var(--cyan)' : '3px solid transparent',
-                boxShadow: esActivo ? 'inset 0 0 20px rgba(34,211,238,0.05)' : 'none',
-              }}
-            >
-              <span className="text-base w-5 text-center flex-shrink-0">{link.icon}</span>
-              <span>{link.label}</span>
-              {esActivo && (
-                <span
-                  className="ml-auto w-1.5 h-1.5 rounded-full flex-shrink-0"
-                  style={{ background: 'var(--cyan)', boxShadow: '0 0 6px var(--cyan)' }}
-                />
+            <a key={item.href} href={item.href} style={{
+              display: 'flex', alignItems: 'center', gap: '14px',
+              padding: '15px 25px',
+              color: activo ? '#22d3ee' : '#d1d5db',
+              textDecoration: 'none',
+              fontSize: '1rem',
+              fontWeight: activo ? '600' : '400',
+              background: activo ? 'rgba(34,211,238,0.12)' : 'transparent',
+              borderLeft: activo ? '3px solid #22d3ee' : '3px solid transparent',
+              transition: '0.3s ease',
+              position: 'relative',
+            }}
+            onMouseEnter={e => {
+              if (!activo) {
+                (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)';
+                (e.currentTarget as HTMLElement).style.color = '#ffffff';
+              }
+            }}
+            onMouseLeave={e => {
+              if (!activo) {
+                (e.currentTarget as HTMLElement).style.background = 'transparent';
+                (e.currentTarget as HTMLElement).style.color = '#d1d5db';
+              }
+            }}>
+              <span style={{ opacity: activo ? 1 : 0.75, flexShrink: 0 }} aria-hidden="true">
+                {item.icon}
+              </span>
+              <span>{item.label}</span>
+              {activo && (
+                <span style={{
+                  marginLeft: 'auto', width: '6px', height: '6px',
+                  borderRadius: '50%', background: '#22d3ee',
+                  boxShadow: '0 0 8px rgba(34,211,238,0.8)', flexShrink: 0,
+                }} />
               )}
             </a>
           );
         })}
-      </div>
+      </nav>
 
-      {/* ══ Usuario + Cerrar sesión ══ */}
-      <div className="p-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-        {/* Info usuario */}
-        <div
-          className="flex items-center gap-3 mb-3 p-3 rounded-xl"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)' }}
-        >
-          <div
-            className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-black overflow-hidden"
-            style={{ background: 'var(--grad-brand)', boxShadow: '0 2px 8px rgba(99,102,241,0.4)' }}
-          >
-            {usuario.foto_url
-              ? <img src={usuario.foto_url} alt={usuario.nombre} className="w-full h-full object-cover" />
-              : <span className="text-white">{usuario.nombre.charAt(0).toUpperCase()}</span>}
+      {/* ── Footer usuario ── */}
+      <div style={{ padding: '20px 16px 24px', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+        {usuario && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '12px',
+            padding: '12px 14px', marginBottom: '12px',
+            background: 'rgba(255,255,255,0.05)',
+            borderRadius: '12px',
+            border: '1px solid rgba(255,255,255,0.08)',
+          }}>
+            {/* Avatar */}
+            <div style={{
+              width: '38px', height: '38px', borderRadius: '50%', flexShrink: 0,
+              background: 'linear-gradient(135deg, #1e3a8a, #581c87)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '14px', fontWeight: 'bold', color: '#fff',
+              overflow: 'hidden',
+              boxShadow: '0 0 10px rgba(34,211,238,0.2)',
+              border: '1px solid rgba(34,211,238,0.3)',
+            }}>
+              {usuario.foto_url
+                ? <img src={usuario.foto_url} alt={usuario.nombre}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : usuario.nombre.charAt(0).toUpperCase()}
+            </div>
+
+            {/* Nombre y rol */}
+            <div style={{ minWidth: 0 }}>
+              <p style={{
+                fontSize: '0.875rem', fontWeight: '600', color: '#fff',
+                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+              }}>
+                {usuario.nombre} {usuario.apellido}
+              </p>
+              <p style={{ fontSize: '0.75rem', color: '#22d3ee', fontWeight: '500' }}>
+                {usuario.rol === 'gerente' ? '👑 Gerente' : '👤 Empleado'}
+              </p>
+            </div>
           </div>
-          <div className="overflow-hidden min-w-0">
-            <p className="text-sm font-bold truncate" style={{ color: 'var(--text-1)' }}>
-              {usuario.nombre} {usuario.apellido}
-            </p>
-            <p className="text-xs truncate" style={{ color: 'var(--cyan)', fontWeight: 600 }}>
-              {usuario.rol === 'gerente' ? '👑 Gerente' : '👤 Empleado'}
-            </p>
-          </div>
-        </div>
+        )}
 
         {/* Botón cerrar sesión */}
-        <button
-          onClick={() => { logout(); router.push('/'); }}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-200"
-          style={{
-            background: 'var(--grad-danger)',
-            color: '#fff',
-            border: 'none',
-            cursor: 'pointer',
-            boxShadow: '0 3px 12px rgba(248,113,113,0.3)',
-          }}
-        >
-          ↩ Cerrar Sesión
+        <button onClick={handleCerrarSesion} style={{
+          width: '100%',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+          padding: '12px',
+          borderRadius: '10px',
+          background: 'linear-gradient(135deg, #ef4444, #ec4899)',
+          color: '#fff', fontWeight: 'bold', fontSize: '0.9rem',
+          border: 'none', cursor: 'pointer',
+          transition: '0.3s ease',
+          boxShadow: '0 4px 15px rgba(239,68,68,0.3)',
+        }}
+        onMouseEnter={e => {
+          (e.currentTarget as HTMLElement).style.transform = 'scale(1.02)';
+          (e.currentTarget as HTMLElement).style.boxShadow = '0 6px 20px rgba(239,68,68,0.5)';
+        }}
+        onMouseLeave={e => {
+          (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
+          (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 15px rgba(239,68,68,0.3)';
+        }}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+            width="18" height="18" aria-hidden="true">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Cerrar Sesión
         </button>
       </div>
-    </nav>
+    </aside>
   );
 }

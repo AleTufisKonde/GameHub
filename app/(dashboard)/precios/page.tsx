@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Precio } from '@/lib/types';
 import { obtenerSesion } from '@/lib/auth';
+import PageHeader from '@/components/PageHeader';
 
 export default function PreciosPage() {
   const sesion = obtenerSesion();
@@ -68,12 +69,7 @@ export default function PreciosPage() {
 
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold" style={{ color: 'var(--cyan)' }}>⚙️ Precios</h1>
-        <p className="mt-1 text-sm" style={{ color: 'var(--text-3)' }}>
-          Administra y actualiza los precios del sistema. Los cambios se aplicarán automáticamente en todas las rentas nuevas.
-        </p>
-      </div>
+      <PageHeader titulo="⚙️ Precios" descripcion="Configura las tarifas por hora y controles extra." />
 
       {precioActual && (
         <div className="card mb-6">

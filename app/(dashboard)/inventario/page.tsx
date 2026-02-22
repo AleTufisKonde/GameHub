@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Consola } from '@/lib/types';
+import PageHeader from '@/components/PageHeader';
 
 export default function InventarioPage() {
   const [consolas, setConsolas] = useState<Consola[]>([]);
@@ -47,12 +48,8 @@ export default function InventarioPage() {
 
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">📋 Inventario</h1>
-        <p className="mt-1 text-sm" style={{ color: 'var(--color-text-muted)' }}>
-          Vista general del inventario agrupado por tipo de consola.
-        </p>
-      </div>
+      <PageHeader titulo="📋 Inventario" descripcion="Vista general agrupada del inventario." />
+
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
         {[
